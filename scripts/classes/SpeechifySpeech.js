@@ -7,11 +7,8 @@ and then turned into an Audio object to be played.
 
 */
 
-
-
 // Creats an audio object with base64Text
 class SpeechifySpeech {
-
     // The undefined audio object
     recording;
 
@@ -28,12 +25,11 @@ class SpeechifySpeech {
 
     // Creates new audio object with b64 text
     createMp3(b64Text) {
-        
         let audioType = "audio/mp3";
-        
+
         let audioDataUri = `data:${audioType};base64,${b64Text}`;
         console.log("Playing mp3...");
-        
+
         let audio = new Audio(audioDataUri);
 
         return audio;
@@ -49,5 +45,4 @@ class SpeechifySpeech {
         this.recording.pause();
         this.recording.currentTime = 0;
     }
-
 }

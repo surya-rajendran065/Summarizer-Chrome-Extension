@@ -8,18 +8,24 @@ but this is built in and won't get rate-limited.
 
 // The speechsynthesis utterance
 const screenReader = new SpeechSynthesisUtterance();
+const synth = window.speechSynthesis;
 
 // Converts given text to speech
 function textToSpeech(givenText) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(givenText);
-    window.speechSynthesis.speak(utterance);
+    synth.cancel();
+    screenReader.text = givenText;
+    synth.speak(screenReader);
 }
 
 // Stops screen reader
 function stopScreenreader() {
-    window.speechSynthesis.cancel();
+    synth.cancel();
     screenReader.text = "Cancelling screen reader";
-    window.speechSynthesis.speak(screenReader);
+    synth.speak(screenReader);
     screenReaderActive = false;
 }
+
+// Sets the built-in screenreader to the most human sounding voice
+synth.addEventListener("voiceschanged", () => {
+    screenReader.voice = synth.getVoices()[4];
+});

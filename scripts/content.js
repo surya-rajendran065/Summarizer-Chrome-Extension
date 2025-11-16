@@ -9,8 +9,6 @@ It relies on several functions/classes from other files
 
 console.log("Content.js Script injected into tab");
 
-
-
 // Summarized Content
 let summarizedContent = "";
 
@@ -25,26 +23,28 @@ summarizeContent().then((result) => {
 });
 
 document.addEventListener("keydown", (event) => {
-    
-    if(event.key === "Control") {
-        if(screenReaderActive) {
+    if (event.key === "Control") {
+        if (screenReaderActive) {
             stopScreenreader();
-            timesControlPressed = 0
+            timesControlPressed = 0;
         } else {
             timesControlPressed++;
+
+            // Resets times pressed if they don't press again in 1.5 seconds
+            if (timesControlPressed == 1) {
+                setTimeout(() => {
+                    timesControlPressed = 0;
+                }, 1500);
+            }
         }
     }
 
     if (timesControlPressed === 3) {
-        
-        if(!screenReaderActive) {
+        if (!screenReaderActive) {
             textToSpeech(summarizedContent);
             screenReaderActive = true;
         }
-
     }
 
     console.log(timesControlPressed, screenReaderActive, event.key); // Debugging
-
-
-})
+});
