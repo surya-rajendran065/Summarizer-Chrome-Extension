@@ -18,11 +18,39 @@ let timesControlPressed = 0;
 // Boolean tells if screen reader is active or not
 let screenReaderActive = false;
 
+// Checks if key is currently being pressed
+let keyBeingPressed = false;
+
+// To Handle AI Agent audio input functionality
+let startTime;
+let recordingStartTime;
+let keyWasHeld = false;
+
+/* Summarizes the webpage in the background so the user doesn't have to
+wait too long for the summary */
+
 summarizeContent().then((result) => {
     summarizedContent = result;
 });
 
+document.addEventListener("keyup", () => {
+    let timeHeld = new Date().getSeconds() - startTime;
+    keyWasHeld = false;
+    startTime = undefined;
+
+    if (timeHeld >= 1) {
+        startAIAgent();
+    }
+});
+
 document.addEventListener("keydown", (event) => {
+    if (event.key === "F2") {
+        if (!keyWasHeld) {
+            startTime = new Date().getSeconds();
+            keyWasHeld = true;
+        }
+    }
+
     if (event.key === "Control") {
         if (screenReaderActive) {
             stopScreenreader();

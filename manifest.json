@@ -1,32 +1,38 @@
 {
-  "name": "Summary Master Extension",
-  "description": "This is an extension used to summarize webpages for visually impaired",
-  "version": "1.0",
-  "manifest_version": 3,
-  "background": {
-    "service_worker": "scripts/service-worker.js",
-    "type": "module"
-  },
-  "permissions": ["activeTab", "scripting", "tts"],
-  "host_permissions": ["https://summarizer-api-seven.vercel.app/*"],
-  "commands": {
-    "summarize-page": {
-      "suggested_key": {
-        "default": "Ctrl+B",
-        "mac": "Command+B"
-      },
-      "description": "Summarize the current webpage"
-    }
-  },
-  "content_scripts" : [
-    {
-      "js" : 
-      [
-      "scripts/screenReader.js",
-      "scripts/summarize.js", 
-      "scripts/content.js"
-      ],
-      "matches" : ["<all_urls>"]
-    }
-  ]
+    "name": "Summary Master Extension",
+    "description": "This is an extension used to summarize webpages for visually impaired",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "scripts/service-worker.js",
+        "type": "module"
+    },
+    "permissions": ["activeTab", "scripting", "tts"],
+    "host_permissions": ["https://summarizer-api-seven.vercel.app/*"],
+    "commands": {
+        "summarize-page": {
+            "suggested_key": {
+                "default": "Ctrl+B",
+                "mac": "Command+B"
+            },
+            "description": "Summarize the current webpage"
+        }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": ["scripts/audio.js", "audio/*"],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    "content_scripts": [
+        {
+            "js": [
+                "scripts/screenReader.js",
+                "scripts/audio.js",
+                "scripts/summarize.js",
+                "scripts/content.js"
+            ],
+            "matches": ["<all_urls>"]
+        }
+    ]
 }
