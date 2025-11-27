@@ -8,7 +8,6 @@ It relies on several functions/classes from other files
 */
 
 console.log("Content.js Script injected into tab");
-const mine = sendMessageToWorker({ message: "Hey man" });
 // Summarized Content
 let summarizedContent = "";
 
@@ -78,8 +77,4 @@ document.addEventListener("keydown", (event) => {
     }
 
     console.log(timesControlPressed, screenReaderActive, event.key); // Debugging
-});
-
-document.addEventListener("click", () => {
-    console.log(mine);
 });

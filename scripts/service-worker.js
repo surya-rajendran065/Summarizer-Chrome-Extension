@@ -54,7 +54,7 @@ function hi() {
 
 // Handles messages from content.js
 function handleMessage(message, sender, sendResponse) {
-    executeOnTab(hi).then((result) => {
+    executeOnTab(logMsg("")).then((result) => {
         sendResponse({ message: result });
     });
     return true;

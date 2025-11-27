@@ -1,8 +1,10 @@
-// Undefined Variables
-let noResponse;
+// Variables
 let speechToTextResult;
 let sentences;
 let endAgent = false;
+
+let timeHandler = new TimeOutHandler("noResponse, finalResult, fallBack");
+
 const recogniton = createRecognition();
 
 // Creates a SpeechRecogniton Object
@@ -10,7 +12,7 @@ function createRecognition() {
     const rec = new window.SpeechRecognition();
     rec.language = "en-US";
     rec.continuous = true;
-    rec.interimResults = true;
+    rec.interimResults = false;
 
     return rec;
 }
@@ -37,20 +39,33 @@ function stopAIAgentSound() {
     endAgent = true;
     playStopEffect();
     textToSpeech("Exiting AI Agent");
-
     recogniton.stop();
 }
 
 // Called once user has given input
 function afterSpeech() {
+    timeHandler.clearAllTime();
     endAgent = true;
     recogniton.stop();
     textToSpeech("Thank you");
-
-    console.log(sentences);
 }
 
+/* Returns a formatted string of the sentences array to be sent to be
+processed by the AI Agent */
+function formattedSentences() {
+    let formattedSentences = `${sentences.join(".")}.`;
+    return formattedSentences;
+}
+/**
+ * These are the event listeners that listen for
+ * events from the user: when the user starts speaking,
+ * when the user speaks a single sentence, and when the user is
+ * done speaking
+ */
 recogniton.addEventListener("result", (event) => {
+    if (finalResult != undefined) {
+        timeHandler.clearTime("finalResult");
+    }
     speechToTextResult = event.results;
 
     clearTimeout(noResponse);
@@ -60,14 +75,14 @@ recogniton.addEventListener("result", (event) => {
         .map((result) => result.transcript)
         .join("\n");
 
+    timeHandler.setTime("finalResult", afterSpeech, 3);
     sentences = text.split("\n");
-
     console.log(text);
 });
 
 recogniton.addEventListener("speechstart", () => {
     console.log("Started speaking :)");
-    setTimeout(afterSpeech, 10000);
+    timeHandler.setTime("fallback", afterSpeech, 10);
 });
 
 recogniton.addEventListener("speechend", () => {

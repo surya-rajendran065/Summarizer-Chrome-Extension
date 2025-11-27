@@ -30,6 +30,7 @@
     "content_scripts": [
         {
             "js": [
+                "scripts/classes/timeOutHandler.js",
                 "scripts/screenReader.js",
                 "scripts/audio.js",
                 "scripts/agent.js",
