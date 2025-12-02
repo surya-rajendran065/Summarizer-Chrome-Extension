@@ -71,7 +71,6 @@ async function callAgent(sentences) {
     const idx = json_response.index; // Function index
     const args = json_response.arguments; // Arguments if function needs it
 
-    textToSpeech(json_response.agentResponse); // Agent's response
     if (idx > -1) {
         const functions = [navigateTo, openUrl, listTabs];
 
@@ -83,4 +82,6 @@ async function callAgent(sentences) {
     } else {
         console.log("\n*** Function not needed ***\n");
     }
+    // Return response from agent
+    return json_response.agentResponse;
 }

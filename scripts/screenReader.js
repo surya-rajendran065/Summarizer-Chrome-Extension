@@ -15,8 +15,6 @@ function textToSpeech(givenText) {
     synth.cancel();
     setText(givenText);
     synth.speak(screenReader);
-    // This is used to call a function once it's finished
-    return screenReader;
 }
 
 // Stops screen reader
@@ -32,6 +30,13 @@ function setText(text) {
     screenReader.text = text;
 }
 
+// Calls 'callBack' after screenreader is done speaking
+function screenReaderEnd(callBack) {
+    screenReader.onend = () => {
+        callBack();
+        screenReader.onend = undefined;
+    };
+}
 // Sets the built-in screenreader to the most human sounding voice
 synth.addEventListener("voiceschanged", () => {
     screenReader.voice = synth.getVoices()[4];

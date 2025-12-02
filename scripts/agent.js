@@ -21,18 +21,16 @@ function createRecognition() {
 async function startAIAgent() {
     playStartEffect();
     await Sleep(500);
-    let intro = textToSpeech(agentStartMessage);
+    textToSpeech(agentStartMessage);
 
     // Waits for screenreader to finish before taking in input
-    intro.onend = () => {
+    screenReaderEnd(() => {
         agentStartMessage = "Listening";
         recogniton.start();
 
-        intro.onend = undefined;
-
         // If the user says nothing, it will stop the listening
         timeHandler.setTime("noResponse", stopAIAgent, 10);
-    };
+    });
 }
 
 // Played when AI Agent is cancelled and the user doesn't produce any noise
@@ -44,10 +42,25 @@ function stopAIAgent() {
 }
 
 // Called once user has given input
-function afterSpeech() {
-    callAgent(formattedSentences());
+async function afterSpeech() {
     timeHandler.clearAllTime();
+    recogniton.stop();
+
     textToSpeech("Thank you, please wait");
+
+    let response = await callAgent(formattedSentences());
+
+    textToSpeech(response);
+
+    screenReaderEnd(() => {
+        recogniton.start();
+    });
+}
+
+// This is to allow the user to stop the agent while it's speaking 'Ctrl'
+// so they may give it another question
+function continueAgentConversation() {
+    textToSpeech("Interrupted, now listening...");
 }
 
 /* Returns a formatted string of the sentences array to be sent to be
