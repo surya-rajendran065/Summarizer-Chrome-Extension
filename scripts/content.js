@@ -18,6 +18,9 @@ let loadContent;
 // State of the panel
 let panelOpen = false;
 
+// State of extension
+let extensionActive;
+
 // Checks how many times user pressed Control
 let timesControlPressed = 0;
 
@@ -49,11 +52,11 @@ async function playSummary() {
     textToSpeech("Starting Summary");
     await Sleep(1500);
 
-    if (screenReaderActive) {
-        loadContent.then(() => {
+    loadContent.then(() => {
+        if (screenReaderActive) {
             textToSpeech(summarizedContent);
-        });
-    }
+        }
+    });
 }
 
 document.addEventListener("keyup", () => {
@@ -64,73 +67,78 @@ document.addEventListener("keyup", () => {
     if (timeHeld >= 1) {
         console.log("F2 was held for", timeHeld, "seconds");
         agentOn = true;
-        startAIAgent();
+        sendMessage("sidePanel", {
+            purpose: "startAgent",
+        });
     }
 });
 
 document.addEventListener("keydown", (event) => {
     if (event.ctrlKey && event.shiftKey) {
-        panelOpen = !panelOpen;
-        if (panelOpen) {
+        console.log(extensionActive);
+        if (!extensionActive) {
             sendMessage("service-worker", { purpose: "openSidePanel" });
-        } else {
-            sendMessage("sidePanel", { purpose: "startAgent" });
+        } else if (extensionActive) {
+            sendMessage("sidePanel", { purpose: "closeSidePanel" });
         }
     }
 
-    // Checks if user holds down F2 for atleast 1 second to trigger Agent
-    if (event.key === "F2") {
-        if (!keyWasHeld) {
-            startTime = new Date().getSeconds();
-            keyWasHeld = true;
-        }
-    }
-
-    if (event.key === "Shift") {
-        // Shifts the summaryModes array
-        summaryModes.unshift(summaryModes[summaryModes.length - 1]);
-        summaryModes.pop();
-
-        textToSpeech(`Selected mode: ${summaryModes[0]}`);
-    }
-
-    // Stop conversation with agent
-    if (event.key === "Escape" && agentOn) {
-        stopAIAgent();
-        agentOn = false;
-    }
-
-    // Play Summarizer if Control is pressed 3 times
-    if (event.key === "Control") {
-        if (screenReaderActive) {
-            stopScreenreader();
-            timesControlPressed = 0;
-            playStopEffect();
-        } else {
-            timesControlPressed++;
-
-            // Resets times pressed if they don't press again in 1.5 seconds
-            if (timesControlPressed == 1) {
-                setTimeout(() => {
-                    timesControlPressed = 0;
-                }, 1500);
+    console.log(extensionActive);
+    if (extensionActive) {
+        // Checks if user holds down F2 for atleast 1 second to trigger Agent
+        if (event.key === "F2") {
+            if (!keyWasHeld) {
+                startTime = new Date().getSeconds();
+                keyWasHeld = true;
             }
         }
 
-        if (agentOn) {
-            continueAgentConversation();
+        if (event.key === "Shift") {
+            // Shifts the summaryModes array
+            summaryModes.unshift(summaryModes[summaryModes.length - 1]);
+            summaryModes.pop();
+
+            textToSpeech(`Selected mode: ${summaryModes[0]}`);
         }
-    }
 
-    if (timesControlPressed === 3) {
-        if (!screenReaderActive) {
-            screenReaderActive = true;
+        // Stop conversation with agent
+        if (event.key === "Escape" && agentOn) {
+            sendMessage("sidePanel", { purpose: "stopAgent" });
+            agentOn = false;
+        }
 
-            /* Create summary is called early to have it be ready sooner */
+        // Play Summarizer if Control is pressed 3 times
+        if (event.key === "Control") {
+            if (screenReaderActive) {
+                stopScreenreader();
+                timesControlPressed = 0;
+                playStopEffect();
+            } else {
+                timesControlPressed++;
 
-            loadContent = createSummary();
+                // Resets times pressed if they don't press again in 1.5 seconds
+                if (timesControlPressed == 1) {
+                    setTimeout(() => {
+                        timesControlPressed = 0;
+                    }, 1500);
+                }
+            }
 
-            playSummary();
+            if (agentOn) {
+                continueAgentConversation();
+            }
+        }
+
+        if (timesControlPressed === 3) {
+            if (!screenReaderActive) {
+                screenReaderActive = true;
+
+                /* Create summary is called early to have it be ready sooner */
+
+                loadContent = createSummary();
+
+                playSummary();
+            }
         }
     }
 
@@ -141,7 +149,7 @@ let gesture = false;
 
 document.addEventListener("click", () => {
     if (!gesture) {
-        textToSpeech("Thank you for using Blind Time!");
+        //textToSpeech("Thank you for using Blind Time!");
         gesture = true;
     }
 });
