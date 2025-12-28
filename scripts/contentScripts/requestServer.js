@@ -24,12 +24,6 @@ async function serverFetch(endpoint, json_obj) {
 of the webpage's content that a user is currently on.
 */
 async function summarizeContent(summaryMode) {
-    /*
-    
-    Use endpoint 2 when in showcase
-
-    */
-
     // Endpoint 1 - Weak extractive summarization to avoid rate limits
     const endpoint1 =
         "https://summary-chrome-extension-backend.onrender.com/simple-sum";
@@ -52,12 +46,20 @@ async function summarizeContent(summaryMode) {
 
     return response.summary;
 }
+
 /* Makes a call to the Python server which sends back a JSON formatted object
 as a response to the user's wish
 */
+
 async function callAgent(sentences) {
     // API Endpoint
+
+    /// Endpoint - Used for testing
     const endpoint =
+        "https://summary-chrome-extension-backend.onrender.com/simple-agent-call";
+
+    // Endpoint - The actual AI Agent, used in production
+    const endpoint2 =
         "https://summary-chrome-extension-backend.onrender.com/agent-call";
 
     const response = await serverFetch(endpoint, { input: sentences });

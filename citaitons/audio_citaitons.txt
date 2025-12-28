@@ -14,3 +14,8 @@ AlertEffect.mp3
 Alert Sound effect By DRAGON-STUDIO on Pixabay.
 Assessed December 18th, 2025.
 https://pixabay.com/users/dragon-studio-38165424/
+
+pauseSound.mp3
+Alert Sound effect By DRAGON-STUDIO on Pixabay.
+Assessed December 23rd, 2025.
+https://pixabay.com/users/dragon-studio-38165424/

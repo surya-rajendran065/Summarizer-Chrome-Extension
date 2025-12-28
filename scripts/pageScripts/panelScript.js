@@ -1,10 +1,13 @@
 // Variables
 let microphoneAccess;
 
+// Returns the status of microphone access
+// Prompt, Granted, or denied
 getMicrophoneAcess().then((result) => {
     microphoneAccess = result;
 });
 
+// Variables
 let speechToTextResult;
 let sentences;
 let agentOn = false;
@@ -36,10 +39,17 @@ function handleMessage(message, sender, sendResponse) {
             console.log("Stopping...");
             stopAIAgent();
         }
+
+        // Pauses AI Agent
+        if (data.purpose === "pauseAgent") {
+            pauseScreenReader();
+        }
     }
 }
 /* ========================= Main Functions ================================== */
 
+/* This is used to make sure the agent works properly before talking to the
+user. If the microphone is not accessible, a message will be played */
 function setUpAgent() {
     if (!microphoneAccess) {
         textToSpeech(
@@ -71,7 +81,7 @@ function createRecognition() {
 
     return rec;
 }
-// Played after user holds f2 for 1 second
+// Played after user holds F2 for 1 second
 async function startAIAgent() {
     agentOn = true;
     playStartEffect();
@@ -100,9 +110,8 @@ function stopAIAgent() {
 }
 
 async function getAgentResponse() {
-    //let response = await callAgent(formattedSentences());
-    //agentResponse = response;
-    agentResponse = "";
+    let response = await callAgent(formattedSentences());
+    agentResponse = response;
 }
 
 // Called once user has given input
@@ -116,7 +125,7 @@ async function afterSpeech() {
     // While an async function is pending, play this loop
     // When finishsed, break
 
-    while (agentResponse === "") {
+    while (agentResponse === "" && agentOn) {
         await Sleep(3000);
         if (agentResponse != "") {
             break;
@@ -180,6 +189,5 @@ recogniton.addEventListener("speechend", () => {
 
 // Adds event listener
 chrome.runtime.onMessage.addListener(handleMessage);
-console.log(recogniton);
 
 /* ========================= End of Event Listeners ================================== */

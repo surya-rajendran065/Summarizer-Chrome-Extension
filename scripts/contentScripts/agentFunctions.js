@@ -1,13 +1,16 @@
 console.log("Agent Functions script loaded");
 
+// Opens a url in the current tab
 function openUrl(url) {
     window.open(url, "_self");
 }
 
+// Opens a url in a new tab
 function navigateTo(url) {
     window.open(url);
 }
 
+// Lists all tabs that are currently opened
 async function listTabs() {
     const tabs = await sendMessage("service-worker", {
         func_message: "listTabs",

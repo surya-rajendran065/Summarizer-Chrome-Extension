@@ -1,7 +1,8 @@
 // Sound effects
 const startEffect = createAudio("audio/Start.mp3");
 const stopEffect = createAudio("audio/Stop.mp3");
-const alertEffect = createAudio("audio/AlertEffect.mp3");
+const alertEffect = createAudio("audio/alertEffect.mp3");
+const pauseEffect = createAudio("audio/pauseSound.mp3");
 
 // Creates a qualified URL for a .mp3 file
 function createAudio(fileName) {
@@ -21,4 +22,9 @@ function playStopEffect() {
 // Plays sound whilst AI Agent and Summary are pending
 function playAlertEffect() {
     alertEffect.play();
+}
+
+// plays the sound effect for pausing and unpausing
+function playPauseEffect() {
+    pauseEffect.play();
 }

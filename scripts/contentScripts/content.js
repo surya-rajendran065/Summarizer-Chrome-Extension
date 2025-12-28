@@ -24,7 +24,6 @@ let timesControlPressed = 0;
 
 // Boolean tells if screen reader is active or not
 let screenReaderActive = false;
-let gesture = false;
 let agentOn = false;
 
 // To Handle AI Agent audio input functionality
@@ -33,7 +32,9 @@ let keyWasHeld = false;
 
 /* ========================= End of Variables ================================== */
 
-/* ========================= Functions ================================== */
+/* ======================== *** Functions *** =============================== */
+
+/* ========> Summary functions <======== */
 
 /* Waits for summarizeContent to be finished,
  * and then sets summarizedContent
@@ -54,7 +55,7 @@ async function playSummary() {
     await Sleep(1500);
 
     /** Waiting for summary */
-    while (summarizedContent === "") {
+    while (summarizedContent === "" && screenReaderActive) {
         await Sleep(3000);
         if (summarizedContent != "") {
             break;
@@ -78,26 +79,22 @@ async function playSummary() {
     });
 }
 
-// Retrieves session data with key 'extensionActive'
-async function getExtensionActive() {
-    let active = await chrome.storage.session.get("extensionActive");
-    return active;
-}
+/* ========> End of Summary functions <======== */
 
-// Changes session data of 'extensionActive'
-async function setActive(state, ttsMsg) {
-    textToSpeech(ttsMsg);
-    extensionActive = undefined;
-
-    chrome.storage.session.set({ extensionActive: state });
-}
+/* ========> Session Data Functions <======== */
 
 function asyncVarValues() {
     // Sets the state of 'extensionActive' when user opens new URL
-    getExtensionActive().then((result) => {
+    getSessionData("extensionActive").then((result) => {
         extensionActive = result.extensionActive;
     });
+
+    getSessionData("agentActive").then((result) => {
+        agentOn = result.agentActive;
+    });
 }
+
+/* ========> End of Session Data Functions <======== */
 
 /* ========================= End of Functions ================================== */
 
@@ -105,24 +102,30 @@ asyncVarValues();
 
 /* ========================= Event Listeners ================================== */
 
+/* ========> Key Up <======== */
 document.addEventListener("keyup", () => {
     let timeHeld = new Date().getSeconds() - startTime;
     keyWasHeld = false;
     startTime = undefined;
 
     if (timeHeld >= 1) {
-        agentOn = true;
+        setAgentOn(true);
         sendMessage("sidePanel", {
             purpose: "startAgent",
         });
-        console.log("Message sent");
 
         console.log("F2 was held for", timeHeld, "seconds");
     }
 });
 
+/* ========> End of Key Up <======== */
+
+/* ========> Key Down <======== */
 document.addEventListener("keydown", (event) => {
+    /* Ctrl + Shift */
     if (event.ctrlKey && event.shiftKey) {
+        /* The browser requires a user gesture meaning they must 'click'
+        on the page some where */
         if (navigator.userActivation.isActive) {
             if (extensionActive === undefined) {
                 sendMessage("service-worker", { purpose: "createSessionData" });
@@ -141,8 +144,11 @@ document.addEventListener("keydown", (event) => {
 
     // Debugging
     console.log(`Extension Active: ${extensionActive}`);
+    console.log(`Agent active: ${agentOn}`);
 
+    /* Extension Keyboard Commands */
     if (extensionActive) {
+        /* F2 */
         // Checks if user holds down F2 for atleast 1 second to trigger Agent
         if (event.key === "F2") {
             if (!keyWasHeld) {
@@ -150,7 +156,7 @@ document.addEventListener("keydown", (event) => {
                 keyWasHeld = true;
             }
         }
-
+        /* Shift */
         if (event.key === "Shift") {
             // Shifts the summaryModes array
             summaryModes.unshift(summaryModes[summaryModes.length - 1]);
@@ -159,12 +165,14 @@ document.addEventListener("keydown", (event) => {
             textToSpeech(`Selected mode: ${summaryModes[0]}`);
         }
 
+        /* Escape */
         // Stop conversation with agent
         if (event.key === "Escape" && agentOn) {
             sendMessage("sidePanel", { purpose: "stopAgent" });
-            agentOn = false;
+            setAgentOn(false);
         }
 
+        /* Control */
         // Play Summarizer if Control is pressed 3 times
         if (event.key === "Control") {
             if (screenReaderActive) {
@@ -182,20 +190,30 @@ document.addEventListener("keydown", (event) => {
                 }
             }
 
+            if (timesControlPressed === 3) {
+                if (!screenReaderActive) {
+                    screenReaderActive = true;
+
+                    /* Create summary is called early to have it be ready sooner */
+
+                    loadContent = createSummary();
+
+                    playSummary();
+                }
+            }
+
             if (agentOn) {
                 textToSpeech("Interrupted, now listening");
             }
         }
 
-        if (timesControlPressed === 3) {
-            if (!screenReaderActive) {
-                screenReaderActive = true;
-
-                /* Create summary is called early to have it be ready sooner */
-
-                loadContent = createSummary();
-
-                playSummary();
+        /* CapsLock */
+        // Pauses screenreader
+        if (event.key === "CapsLock") {
+            if (screenReaderActive) {
+                pauseScreenReader();
+            } else if (agentOn) {
+                sendMessage("sidePanel", { purpose: "pauseAgent" });
             }
         }
     }
@@ -203,23 +221,26 @@ document.addEventListener("keydown", (event) => {
     console.log(timesControlPressed, screenReaderActive, event.key); // Debugging
 });
 
+/* ========> End of Key Down <======== */
+
 /** User gesture is required for extension to play audio or
  * open side panel
  */
-
-document.addEventListener("click", () => {
-    if (!gesture) {
-        gesture = true;
-    }
-});
 
 /* This code ensures that all content scripts update the state of
 'extensionActive' to avoid bugs */
 chrome.storage.onChanged.addListener((changes, namespace) => {
     for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+        console.log("Key", key);
+
         if (key === "extensionActive") {
             extensionActive = newValue;
-            console.log(`Extension active set to `, extensionActive);
+            console.log("Extension active set to ", extensionActive);
+        }
+
+        if (key === "agentActive") {
+            agentOn = newValue;
+            console.log("Agent active set to ", agentOn);
         }
     }
 });

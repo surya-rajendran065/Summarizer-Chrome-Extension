@@ -1,4 +1,4 @@
-// Listens to keyboard commands
+// Listens to keyboard commands (used for testing the service-worker)
 chrome.commands.onCommand.addListener(async (command) => {
     // When user presses Ctrl+B
     if (command === "summarize-page") {
@@ -7,12 +7,8 @@ chrome.commands.onCommand.addListener(async (command) => {
     }
 });
 
-// This function is used to send messages and is only used within this scripts
+// This function is used to send messages
 async function sendMessage(target, data) {
-    if (target === "offScreen") {
-        await setUpOffScreen();
-    }
-
     const response = await chrome.runtime.sendMessage({
         target: target,
         data: data,
@@ -38,63 +34,20 @@ async function listTabs() {
  * End of Agent Function
  */
 
-/**
- * Sends a message to target
- */
-
-// Creates an offscreen document with specified path
-async function createOffScreenDoc(path) {
-    const just = `The extension needs 
-    audio from the user's microphone so 
-    it can interact with an AI Agent, 
-    that can answer their questions and perform browser operations`;
-
-    await chrome.offscreen.createDocument({
-        url: path,
-        reasons: ["USER_MEDIA", "BLOBS"],
-        justification: just,
-    });
-}
-
-// Creats an offscreen document if it already doesn't exist
-async function setUpOffScreen() {
-    const path = "pages/audioRetriever.html";
-
-    let docURL = chrome.runtime.getURL(path);
-
-    const existingContexts = await chrome.runtime.getContexts({
-        contextTypes: ["OFFSCREEN_DOCUMENT"],
-        documentUrls: [docURL],
-    });
-
-    if (existingContexts.length > 0) {
-        return;
-    }
-
-    await createOffScreenDoc(path);
-}
-
 // Creates session data
 function createSessionData() {
     chrome.storage.session.set({ extensionActive: false }).then(() => {
-        console.log("Value was set"); // Debugging
+        console.log("Value was set for extensionActive"); // Debugging
+    });
+
+    chrome.storage.session.set({ agentActive: false }).then(() => {
+        console.log("Value was set for agentActive"); // Debugging
     });
 
     // Allows other parts of the extension to access session data
     chrome.storage.session.setAccessLevel({
         accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
     });
-}
-
-// Gets a specified session data by key
-function getSessionData(key) {
-    let theResult;
-    chrome.storage.session.get([key]).then((result) => {
-        console.log("Value is " + result.key);
-        theResult = result;
-    });
-
-    return theResult;
 }
 
 // Gets the current tab
@@ -104,6 +57,7 @@ async function getCurrentTab() {
     return tabs[0];
 }
 
+// Creates a new tab with the specified url
 function createNewTab(url) {
     chrome.tabs.create({ url: url });
 }
@@ -126,14 +80,11 @@ if no errors were present
 */
 async function executeOnTab(callBack) {
     let tab = await getCurrentTab();
-    let status = "Success";
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: callBack,
     });
-
-    return status;
 }
 
 // Opens side panel globally across windows

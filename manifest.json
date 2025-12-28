@@ -4,7 +4,7 @@
     "version": "1.0",
     "manifest_version": 3,
     "background": {
-        "service_worker": "scripts/service-worker.js",
+        "service_worker": "scripts/service-worker/service-worker.js",
         "type": "module"
     },
     "permissions": [
@@ -12,7 +12,6 @@
         "scripting",
         "audioCapture",
         "tabs",
-        "offscreen",
         "sidePanel",
         "storage"
     ],
@@ -35,13 +34,14 @@
     "content_scripts": [
         {
             "js": [
-                "scripts/utils.js",
+                "scripts/contentScripts/utils.js",
+                "scripts/contentScripts/session.js",
                 "scripts/classes/timeOutHandler.js",
-                "scripts/screenReader.js",
-                "scripts/audio.js",
-                "scripts/requestServer.js",
-                "scripts/content.js",
-                "scripts/agentFunctions.js"
+                "scripts/contentScripts/screenReader.js",
+                "scripts/contentScripts/audio.js",
+                "scripts/contentScripts/requestServer.js",
+                "scripts/contentScripts/content.js",
+                "scripts/contentScripts/agentFunctions.js"
             ],
             "matches": ["<all_urls>"]
         }
