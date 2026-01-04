@@ -55,14 +55,14 @@ async function callAgent(sentences) {
     // API Endpoint
 
     /// Endpoint - Used for testing
-    const endpoint =
+    const endpoint1 =
         "https://summary-chrome-extension-backend.onrender.com/simple-agent-call";
 
     // Endpoint - The actual AI Agent, used in production
     const endpoint2 =
         "https://summary-chrome-extension-backend.onrender.com/agent-call";
 
-    const response = await serverFetch(endpoint, { input: sentences });
+    const response = await serverFetch(endpoint2, { input: sentences });
     console.log(response);
     // It returns an array so we must specify [0] to get the first object
     const json_response = JSON.parse(response.response)[0];

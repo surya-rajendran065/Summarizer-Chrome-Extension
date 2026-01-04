@@ -62,6 +62,12 @@ function createNewTab(url) {
     chrome.tabs.create({ url: url });
 }
 
+// Closes the tab the user is currently on
+async function closeCurrentTab() {
+    let currentTab = await getCurrentTab();
+    chrome.tabs.remove(currentTab.id);
+}
+
 // Logs a message within the console of the active tab
 async function logMsg(msg) {
     let tab = await getCurrentTab();
@@ -112,6 +118,8 @@ function handleMessage(message, sender, sendResponse) {
                 openPanel();
             } else if (data.purpose === "createNewTab") {
                 createNewTab(data.url);
+            } else if (data.purpose === "closeCurrentTab") {
+                closeCurrentTab();
             } else if (data.purpose === "createSessionData") {
                 createSessionData();
             }

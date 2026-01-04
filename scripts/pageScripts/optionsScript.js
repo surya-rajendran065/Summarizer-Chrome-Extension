@@ -12,16 +12,26 @@ button.addEventListener("click", () => {
 // Played when user grants permission
 function granted(mic) {
     textToSpeech(
-        "Thank you, blind time now has access to your microphone, return to your original tab using control + tab"
+        "Thank you, blind time now has access to your microphone. I will return you to your original tab."
     );
-    stopTrack(mic);
+    screenReaderEnd(() => {
+        stopTrack(mic);
+        exitOptions();
+    });
 }
 
 // Played when user denies permission
 function denied() {
-    textToSpeech(
-        "You have denied blind time access to your microphone, return to your original tab using control + tab"
-    );
+    textToSpeech("You have denied blind time access to your microphone");
+    screenReaderEnd(() => {
+        exitOptions();
+    });
+}
+
+// Updates permission in sidePanel and closes the current tab
+function exitOptions() {
+    sendMessage("sidePanel", { purpose: "updateMicrophonePermission" });
+    sendMessage("service-worker", { purpose: "closeCurrentTab" });
 }
 
 // This stops the recording immediately after user grants permission

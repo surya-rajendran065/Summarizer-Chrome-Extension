@@ -1,12 +1,6 @@
 // Variables
 let microphoneAccess;
 
-// Returns the status of microphone access
-// Prompt, Granted, or denied
-getMicrophoneAcess().then((result) => {
-    microphoneAccess = result;
-});
-
 // Variables
 let speechToTextResult;
 let sentences;
@@ -18,6 +12,17 @@ let timeHandler = new TimeOutHandler("noResponse, finalResult, fallBack");
 const recogniton = createRecognition();
 let agentStartMessage = `Hello, I'm Rosie, your AI Agent. I will answer
 your questions and requests! press escape to stop talking`;
+
+// Returns the status of microphone access
+// Prompt, Granted, or denied
+function setMicrophoneAccess() {
+    getMicrophoneAcess().then((result) => {
+        microphoneAccess = result;
+        console.log(`Microphone Access is: ${microphoneAccess}`);
+    });
+}
+
+setMicrophoneAccess();
 
 // Handles messages from content scripts
 function handleMessage(message, sender, sendResponse) {
@@ -44,9 +49,19 @@ function handleMessage(message, sender, sendResponse) {
         if (data.purpose === "pauseAgent") {
             pauseScreenReader();
         }
+
+        // Updates microphone permission
+        if (data.purpose === "updateMicrophonePermission") {
+            setMicrophoneAccess();
+        }
     }
 }
 /* ========================= Main Functions ================================== */
+
+function setAgentActive(state) {
+    setAgentOn(state);
+    agentOn = state;
+}
 
 /* This is used to make sure the agent works properly before talking to the
 user. If the microphone is not accessible, a message will be played */
@@ -54,7 +69,7 @@ function setUpAgent() {
     if (!microphoneAccess) {
         textToSpeech(
             `You need to give blind time access to use your microphone,
-                I will open a new tab for you with a button that you can click to give permission`
+                I will open a new tab for you with a button that you can click to give permission. Press your tab key once to get to the button. Once you press it, a prompt will ask you for permission. Use your down arrow key to navigate. Choose 'Allow when using site'`
         );
 
         screenReaderEnd(() => {
@@ -83,7 +98,7 @@ function createRecognition() {
 }
 // Played after user holds F2 for 1 second
 async function startAIAgent() {
-    agentOn = true;
+    setAgentActive(true);
     playStartEffect();
     await Sleep(500);
     textToSpeech(agentStartMessage);
@@ -102,7 +117,7 @@ async function startAIAgent() {
 
 // Played when AI Agent is cancelled and the user doesn't produce any noise
 function stopAIAgent() {
-    agentOn = false;
+    setAgentActive(false);
     timeHandler.clearAllTime();
     playStopEffect();
     textToSpeech("Exiting AI Agent");

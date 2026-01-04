@@ -109,7 +109,6 @@ document.addEventListener("keyup", () => {
     startTime = undefined;
 
     if (timeHeld >= 1) {
-        setAgentOn(true);
         sendMessage("sidePanel", {
             purpose: "startAgent",
         });
@@ -139,6 +138,7 @@ document.addEventListener("keydown", (event) => {
             textToSpeech(
                 "We're terribbly sorry, you need to click the screen with your mouse once in order for Blind Time to activate"
             );
+            console.log(`***** Not activated *****`);
         }
     }
 
