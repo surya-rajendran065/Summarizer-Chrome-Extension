@@ -25,6 +25,7 @@ let timesControlPressed = 0;
 // Boolean tells if screen reader is active or not
 let screenReaderActive = false;
 let agentOn = false;
+let allowShift = false;
 
 // To Handle AI Agent audio input functionality
 let startTime;
@@ -125,6 +126,8 @@ document.addEventListener("keydown", (event) => {
     if (event.ctrlKey && event.shiftKey) {
         /* The browser requires a user gesture meaning they must 'click'
         on the page some where */
+        allowShift = false;
+
         if (navigator.userActivation.isActive) {
             if (extensionActive === undefined) {
                 sendMessage("service-worker", { purpose: "createSessionData" });
@@ -135,11 +138,13 @@ document.addEventListener("keydown", (event) => {
                 setActive(!extensionActive, "Deactivated");
             }
         } else {
+            let activation = extensionActive ? "deactivate" : "activate";
             textToSpeech(
-                "We're terribbly sorry, you need to click the screen with your mouse once in order for Blind Time to activate"
+                `We are terribbly sorry, you need to click the screen with your mouse once in order for Blind Time to ${activation}`
             );
             console.log(`***** Not activated *****`);
         }
+        console.log("*** Pressed Shift + Ctrl ***");
     }
 
     // Debugging
@@ -156,14 +161,6 @@ document.addEventListener("keydown", (event) => {
                 keyWasHeld = true;
             }
         }
-        /* Shift */
-        if (event.key === "Shift") {
-            // Shifts the summaryModes array
-            summaryModes.unshift(summaryModes[summaryModes.length - 1]);
-            summaryModes.pop();
-
-            textToSpeech(`Selected mode: ${summaryModes[0]}`);
-        }
 
         /* Escape */
         // Stop conversation with agent
@@ -171,6 +168,16 @@ document.addEventListener("keydown", (event) => {
             sendMessage("sidePanel", { purpose: "stopAgent" });
             setAgentOn(false);
         }
+
+        if (event.key === "Shift" && allowShift) {
+            // Shifts the summaryModes array
+            summaryModes.unshift(summaryModes[summaryModes.length - 1]);
+            summaryModes.pop();
+
+            textToSpeech(`Selected mode: ${summaryModes[0]}`);
+        }
+
+        allowShift = true;
 
         /* Control */
         // Play Summarizer if Control is pressed 3 times
